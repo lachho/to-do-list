@@ -1,0 +1,534 @@
+swagger: "2.0"
+info:
+  title: DoToo API
+  description: |
+    API description in for DoToo.
+  version: 1.0.0
+ 
+schemes:
+  - http
+
+components:
+  prim:
+    Step:
+      type: integer
+      example: 1
+    Name:
+      type: string
+      example: Example String
+    BulkString:
+      type: string
+      example:  My Task ; null; TODO ; tagName1, tagName2, tagName3 | My Task 2 ; 1; INPROGRESS ; tagName3, tagName2
+    Description:
+      type: string
+      example: Example Description
+    Deadline:
+      type: integer
+      example: 1652030409
+      description: A unix timestamp (in seconds) of when the deadline of the task is. A valid unix timestamp is one greater than 0 and less than 2^32 - 1. It may be null, in which case there is no deadline set.
+    Score:
+      type: string
+      enum: [NA, LOW, HIGH]
+      example: "HIGH"
+      description: |
+        The achievement score for how quickly you completed a particular todo
+        task. HIGH is for completions before the due date, LOW is for completions
+        after the due date. If the task has yet to be completed, it has a score of NA.
+        If no deadline was set, then set the achievement score to HIGH upon completion.
+    TodoItemId:
+      type: integer
+      example: 1
+      description: The ID of a todo item
+    TodoItemIds:
+      type: array
+      items:
+        $ref: '#/components/prim/TodoItemId'
+    ParentId:
+      type: integer
+      example: 1
+      description: This may be null
+    TodoItem:
+      type: object
+      properties:
+        description:
+          $ref: '#/components/prim/Description'
+        tagIds:
+          $ref: '#/components/prim/TagIds'
+        status:
+          $ref: '#/components/prim/Status'
+        parentId:
+          $ref: '#/components/prim/ParentId'
+        score:
+          $ref: '#/components/prim/Score'
+    TagId:
+      type: integer
+      example: 1
+      description: ID of a tag
+    TagIds:
+      type: array
+      items:
+        $ref: '#/components/prim/TagId'
+    Status:
+      type: string
+      enum: [TODO, INPROGRESS, BLOCKED, DONE]
+      example: "TODO"
+      description: The status of a particular todo item
+    StatusExample:
+      type: string
+      enum: [TODO, INPROGRESS, BLOCKED, DONE]
+      example: "INPROGRESS"
+      description: The status of a particular todo item
+    StatusChangeDateTime:
+      type: integer
+      example: 1652030409
+      description: A unix timestamp (in seconds) of when the status was changed.
+    Tag:
+      type: object
+      properties:
+        tagId:
+          $ref: '#/components/prim/TagId'
+        name:
+          $ref: '#/components/prim/Name'
+    NotificationEvent:
+      type: object
+      properties:
+        todoItemId:
+          $ref: '#/components/prim/TodoItemId'
+        todoItemDescription:
+          $ref: '#/components/prim/Description'
+        statusBefore:
+          $ref: '#/components/prim/Status'
+        statusAfter:
+          $ref: '#/components/prim/StatusExample'
+        statusChangeTimestamp:
+          $ref: '#/components/prim/StatusChangeDateTime'
+  query:
+    TodoSummaryStep:
+      in: query
+      name: step
+      required: true
+      description: How many set of 10 offset to get. 
+      schema:
+        $ref: '#/components/prim/Step'
+    TodoListParent:
+      in: query
+      name: parentId
+      required: false
+      schema:
+        $ref: '#/components/prim/TodoItemId'
+    TodoItemId:
+      in: query
+      name: itemId
+      required: false
+      schema:
+        $ref: '#/components/prim/TodoItemId'
+    TodoListTags:
+      in: query
+      name: tagIds
+      required: false
+      description: JSONified list of tagIds (e.g. "[1,2,3,5,7]" or "null")
+      schema:
+        $ref: '#/components/prim/TagIds'
+    TodoListStep:
+      in: query
+      name: step
+      required: false
+      schema:
+        $ref: '#/components/prim/Step'
+    TodoListStatus:
+      in: query
+      name: status
+      required: false
+      schema:
+        $ref: '#/components/prim/Status'
+    GetTodoItem:
+      in: query
+      name: todoItemId
+      required: false
+      schema:
+        $ref: '#/components/prim/TodoItemId'
+    DeleteTodoItem:
+      in: query
+      name: todoItemId
+      required: false
+      schema:
+        $ref: '#/components/prim/TodoItemId'
+    DeleteTag:
+      in: query
+      name: tagId
+      required: true
+      schema:
+        $ref: '#/components/prim/TagId'
+    GetTag:
+      in: query
+      name: tagId
+      required: true
+      schema:
+        $ref: '#/components/prim/TagId'
+  body:
+    PostTag:
+      in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          name:
+            $ref: '#/components/prim/Name'
+    PostTodoItem:
+      in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          description:
+            $ref: '#/components/prim/Description'
+          parentId:
+            $ref: '#/components/prim/ParentId'
+    PostBulkTodoItem:
+      in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          bulkString:
+            $ref: '#/components/prim/BulkString'
+    PutTodoItem:
+      in: body
+      name: body
+      required: true
+      schema:
+        type: object
+        properties:
+          todoItemId:
+            $ref: '#/components/prim/TodoItemId'
+          description:
+            $ref: '#/components/prim/Description'
+          tagIds:
+            $ref: '#/components/prim/TagIds'
+          status:
+            $ref: '#/components/prim/Status'
+          parentId:
+            $ref: '#/components/prim/ParentId'
+          deadline:
+            $ref: '#/components/prim/Deadline'
+
+  return:
+    TodoItem:
+      $ref: '#/components/prim/TodoItem'
+    TodoItemIds:
+      type: object
+      properties:
+        todoItemIds:
+          $ref: '#/components/prim/TodoItemIds'
+    PostTodoItem:
+      type: object
+      properties:
+        todoItemId:
+          $ref: '#/components/prim/TodoItemId'
+    PostBulkTodoItem:
+      type: object
+      properties:
+        todoItemIds:
+          $ref: '#/components/prim/TodoItemIds'
+    PostTag:
+      type: object
+      properties:
+        tagId: 
+          $ref: '#/components/prim/TagId'
+    GetTag:
+      type: object
+      properties:
+        name: 
+          $ref: '#/components/prim/Name'
+    TodoListItem:
+      type: object
+      properties:
+        todoItems:
+          type: array
+          items:
+            $ref: '#/components/prim/TodoItem'
+    GetTagList:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: '#/components/prim/Tag'
+    Stub:
+      type: object
+    Error:
+      properties:
+        error:
+          type: string
+    Notifications:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/prim/NotificationEvent'
+
+
+paths:
+  /clear:
+    delete:
+      summary: Reset the state of the application back to the start.
+      description: Wipe the data of doToo, such as items and tags back to the beginning, as if the data structure is fresh.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/Stub'
+  /tag/list:
+    get:
+      summary: Get a list of all tags
+      description: Get all the tags. The list may be returned in any order.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/GetTagList'
+  /tag:
+    get:
+      summary: Get a tag name
+      description: Get a tag name based on `tagId`.
+      parameters:
+        - $ref: '#/components/query/GetTag'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/GetTag'
+        400:
+          description: |
+            If any of the following are true:
+            * `tagId` does not exist
+          schema:
+            $ref: '#/components/return/Error' 
+    delete:
+      summary: Delete a tag
+      description: Delete a tag and disassociate it from any todo items such that no more items are connected to that tag.
+      parameters:
+        - $ref: '#/components/query/DeleteTag'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/Stub'
+        400:
+          description: |
+            If any of the following are true:
+            * `tagId` does not exist
+          schema:
+            $ref: '#/components/return/Error' 
+    post:
+      summary: Create a new tag
+      description: Create a new tag
+      parameters:
+        - $ref: '#/components/body/PostTag'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/PostTag'
+        400:
+          description: |
+            If any of the following are true:
+            * `name` is shorter than 1 character
+            * `name` is longer than 10 characters
+            * a tag with this `name` already exists (comparisons are case insensitive)
+          schema:
+            $ref: '#/components/return/Error'  
+  /todo/item:
+    get:
+      summary: Get details about a todo item
+      description: Get the information about a particular todo item.
+      parameters:
+        - $ref: '#/components/query/GetTodoItem'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/TodoItem'
+        400:
+          description: |
+            If any of the following are true:
+            * `todoItemId` is not valid
+          schema:
+            $ref: '#/components/return/Error'
+    delete:
+      summary: Delete a todo item
+      description: |
+        Delete a todo item. If the item has any children, then those children must be deleted too. If those subsequently deleted children have more children, then those children are deleted too. This process continues until all children, sub-children, sub-sub-children, etc, of the deleted node are deleted.
+        If, through this deletion, all items associated with a particular tag are deleted, then the tag is deleted too. Finally, delete all notifications related to this item.
+      parameters:
+        - $ref: '#/components/query/DeleteTodoItem'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/Stub'
+        400:
+          description: |
+            If any of the following are true:
+            * `todoItemId` is not valid
+          schema:
+            $ref: '#/components/return/Error'
+    post:
+      summary: Create a new todo item
+      description: Create a new todo item with a `description` and a `parentId` (which may be null). A default todo item should have status `"TODO"` and a deadline of `null`. It should have an empty list of tags, with a score of NA.
+      parameters:
+        - $ref: '#/components/body/PostTodoItem'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/PostTodoItem'
+        400:
+          description: |
+            If any of the following are true:
+            * There are already 50 todo items in the system
+            * Description is less than 1 character
+            * `parentId` does not refer to a different, existing todo item.
+            * A todo item of this `description`, that shares a common immediate parent task (or a null parent), already exists. `null` can be considered a valid parent (`null` parent means it is a top level todo item and has no parent). Comparisons are case insensitive.
+          schema:
+            $ref: '#/components/return/Error'
+    put:
+      summary: Update a todo item
+      description: |
+        Update a todo item\'s `description`, `status`, `tagIds`, `deadline`, and `parentId`.
+        If any current tags are not in the `tagIds` list, they are dissociated from this `todoItem`. If, through action of this deletion, all items associated with a particular tag are deleted, then the tag is deleted too.
+        If `deadline` is `null`, set the deadline of the item to `null`, removing the deadline for the item. 
+        If both the status and the deadline are updated, then use the new deadline to determine the score.
+        If only the status is updated - that is, the same deadline is passed - then you may use the old deadline to determine the score.
+        Notifications related to this item must show the most recent description.
+      parameters:
+        - $ref: '#/components/body/PutTodoItem'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/Stub'
+        400:
+          description: |
+            If any of the following are true:
+            * `todoItemId` is not valid
+            * `description` is less than 1 character
+            * A todo item of this `description`, that shares a common immediate parent task (or a `null` parent), already exists. `null` can be considered a valid parent (`null` parent means it is a top level todo item and has no parent). Comparisons are case insensitive. Exclude the item itself.
+            * `status` is not a valid enum of statuses
+            * `tagIds` contains any invalid `tagId`s
+            * `parentId` refers to this todo list item\'s ID
+            * `parentId` is not `null` and does not refer to an exiting `todoItemId` 
+            * `parentId` would create a cycle in the todo list structure
+            * `deadline` is not `null` and is not a valid unix timestamp
+          schema:
+            $ref: '#/components/return/Error'
+  /todo/list:
+    get:
+      summary: Get a list of todo items based on the input criteria
+      description: |
+        Get a filtered list of all todo items, ordered from most recently created, to least recently created.
+        If `tagIds` is not null, then only display todo items that have the same set of input tags.
+        If `status` is not null, then only display todo items that match the status exactly.
+        If both are included, display only items which match both criteria.
+        In all cases, display the items which match the input `parentId`. This `parentId` may be null, in which case you return the items with a null parent.
+      parameters:
+        - $ref: '#/components/query/TodoListParent'
+        - $ref: '#/components/query/TodoListTags'
+        - $ref: '#/components/query/TodoListStatus'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/TodoListItem'
+        400:
+          description: |
+            If any of the following are true:
+            * If `status` is not null:
+              * `status` is not a valid status
+            * If `tagIds` is not null:
+              * `tagIds` is an empty list
+              * `tagIds` contains any invalid `tagId`
+            * If `parentId` is not null:
+              * `parentId` does not refer to a valid todo item.
+          schema:
+            $ref: '#/components/return/Error'
+  /todo/item/bulk:
+    post:
+      summary: Bulk create multiple todo items from a single string
+      description: |
+        Bulk create multiple todo items and tags with a single string.
+        * Tasks are separated by pipe symbols `|` and components within each task are separated by semi colons `;`.
+        * Components within each task are in the order of: `description`, `parentId`, `status`, list of tag names (comma separated). 
+        * The `parentId` section can be ommited or blank, in which case you can assume it is null. 
+        * The tag section can be omitted or blank, in which case, no tags are associated with this component. Tags are case insensitive. 
+        * If a valid tag name does not already exist, create the tag.
+        * Any excess whitespace to the left or right of any component or tag name should be removed.
+        
+        Examples include:
+         * " My Task ; null; TODO ; tagName1, tagName2, tagName3 | My Task 2 ; 1; INPROGRESS ; tagName3, tagName2"
+         * " My Task ; TODO ;"
+         * " My task; ; TODO ;"
+         * " My task ; TODO ; tagName1, tagName2"
+         * " My task; ; TODO; | My task; 1 ; TODO ; | My task; 1 ; TODO; tagName1"
+        
+        **If processing any todo items or tag\'s creation causes an error, NO todo items NOR tags should be created.**
+      parameters:
+        - $ref: '#/components/body/PostBulkTodoItem'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/PostBulkTodoItem'
+        400:
+          description: |
+            If any of the following are true:
+            * Processing this bulk creation will mean that more than 50 todo items are in the system.
+            * Any descriptions are less than 1 character
+            * Any todo item\'s description is identical to any other item\'s description, AND shares a common immediate parent task (or a null parent). This other todo item may already exist or may be another item in the bulk creation string. `null` can be considered a valid parent (null parent means it is a top level todo item and has no parent). Comparisons are case insensitive.
+            * If a non-empty `parentId` is provided:
+              * `parentId` is not a valid `todoItemId`
+            * `status` is not a valid status
+            * Any of the tags specified in the bulk string have a:
+              * `name` shorter than 1 character
+              * `name` longer than 10 characters
+          schema:
+            $ref: '#/components/return/Error'
+  /summary:
+    get:
+      summary: Get a list of the most recently completed todo items
+      description: |
+        Get the `TodoItemIds` of the completed todo items, ordered from most recently completed to least recently completed.
+        
+        The `step` parameter is used to determine what slice of the completed items to return. A slice contains 10 consecutive todo items.
+        null returns the 10 most recently completed items, 1 returns the next 10, and so on. Specifically:
+        null = 1-10, 1 = 11-20, 2 = 21-30, 3 = 31-40, 4 = 41-50.
+        These ranges are inclusive.
+
+        The return type is an array that contains 0-10 `todoItemId`\'s in it, depending on how many completed jobs exist. For example,  If only 5 jobs have been completed, then step = null will give an array of 5 `todoItemId`s, and any other step will provide an empty array.
+      parameters:
+        - $ref: '#/components/query/TodoSummaryStep'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/TodoItemIds'
+        400:
+          description: |
+            If any of the following are true:
+            * Step is not one of { null, 1, 2, 3, 4 }, as there are a max of 50 items to get.
+          schema:
+            $ref: '#/components/return/Error'
+  /notifications:
+    get:
+      summary: Get a list of all notifications
+      description: |
+        Get a list of all notifications that describe the status change of all todo items. The list may be returned in any order. If a todo item is deleted, then the notifications for it are also removed. If the description of an item changes, then that change should be reflected in all previous and future notifications related to that todoItem. 
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/components/return/Notifications'
